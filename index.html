@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal de Consulta VIU</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              brand: {
+                dark: '#e65014', /* Color Principal */
+                light: '#F39772', /* Color Secundario */
+                accent: '#5F21AB' /* Color de Acento */
+              }
+            }
+          }
+        }
+      }
+    </script>
+</head>
+<body class="bg-white m-0 p-0 antialiased text-slate-800 font-sans flex flex-col items-center min-h-screen">
+
+<div id="portal-consulta-viu" class="w-full p-4 sm:p-8 flex flex-col items-center">
+  <!-- Cabecera -->
+  <div class="w-full max-w-4xl text-center mb-10 mt-2">
+    <h1 class="text-3xl md:text-4xl font-bold text-slate-900 mb-3 tracking-tight">Portal de Consulta para Estudiantes</h1>
+    <p class="text-slate-500 text-lg max-w-2xl mx-auto">Busca tu titulación para acceder a los enlaces clave y consultar la fecha de inicio de tu programa.</p>
+  </div>
+
+  <div class="w-full max-w-4xl grid grid-cols-1 lg:grid-cols-12 gap-8">
+    
+    <!-- Columna Izquierda: Buscador -->
+    <div class="lg:col-span-5 space-y-6 relative z-50">
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8 relative">
+        <h2 class="text-xl font-semibold mb-2 flex items-center text-slate-800">
+          <svg class="w-6 h-6 mr-2 text-brand-light" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M10.5 3a7.5 7.5 0 0 1 5.64 12.38l4.67 4.67a.75.75 0 0 1-1.06 1.06l-4.67-4.67A7.5 7.5 0 1 1 10.5 3Zm0 1.5a6 6 0 1 0 0 12 6 6 0 0 0 0-12Z"/>
+          </svg>
+          Encuentra tu titulación
+        </h2>
+        <p class="text-sm text-slate-500 mb-6">Escribe al menos 4 letras del nombre de tu máster, grado o sus siglas.</p>
+
+        <!-- Barra de búsqueda -->
+        <div class="relative w-full">
+          <div class="relative flex items-center w-full h-14 bg-white border border-slate-300 rounded-xl focus-within:shadow-md focus-within:border-brand-light transition-all overflow-hidden">
+            <div class="flex-shrink-0 grid place-items-center h-full w-12 text-slate-400">
+              <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M10.5 3a7.5 7.5 0 0 1 5.64 12.38l4.67 4.67a.75.75 0 0 1-1.06 1.06l-4.67-4.67A7.5 7.5 0 1 1 10.5 3Zm0 1.5a6 6 0 1 0 0 12 6 6 0 0 0 0-12Z"/>
+              </svg>
+            </div>
+            <input type="text" id="buscador-titulacion" placeholder="Ej: Big Data, Abogacía..." autocomplete="off" class="flex-1 w-full h-full outline-none text-base text-slate-700 bg-transparent" />
+            <button id="btn-limpiar" class="hidden flex-shrink-0 place-items-center h-full w-12 text-slate-300 hover:text-slate-500 cursor-pointer outline-none">
+              <svg class="h-5 w-5 mx-auto" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M4.22 4.22a.75.75 0 0 1 1.06 0L10 8.94l4.72-4.72a.75.75 0 1 1 1.06 1.06L11.06 10l4.72 4.72a.75.75 0 1 1-1.06 1.06L10 11.06l-4.72 4.72a.75.75 0 0 1-1.06-1.06L8.94 10 4.22 5.28a.75.75 0 0 1 0-1.06Z"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Dropdown -->
+          <div id="dropdown-resultados" class="hidden absolute left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-2xl max-h-80 overflow-y-auto z-50">
+            <ul id="lista-resultados" class="divide-y divide-slate-100"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Columna Derecha: Resultados -->
+    <div class="lg:col-span-7 relative z-10">
+      
+      <!-- ESTADO VACÍO -->
+      <div id="resultado-vacio" class="bg-gray-100/50 border border-gray-200 border-dashed rounded-2xl h-full min-h-[400px] flex flex-col items-center justify-center text-gray-400 p-8 transition-opacity duration-300">
+        <svg class="w-16 h-16 mb-4 text-gray-300" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2v6c0 1.1.9 2 2 2h6v2.22a6.47 6.47 0 0 0-1.5-.22H11a6.5 6.5 0 0 0-5.83 8.35c-1.3-.4-2.17-1.63-2.17-3.1V4c0-1.1.9-2 2-2h7Zm1.5 0v6a.5.5 0 0 0 .5.5h6l-6.5-6.5ZM23 17.5a5.5 5.5 0 1 0-11 0 5.5 5.5 0 0 0 11 0Zm-4.15 3.85a.5.5 0 0 1-.7.7l-2.01-2.01a4 4 0 1 1 .71-.7l2 2Z"/>
+        </svg>
+        <p class="text-center text-lg font-medium text-gray-500">Tu información aparecerá aquí</p>
+        <p class="text-center text-sm mt-2 max-w-sm">Utiliza el buscador de la izquierda para encontrar tu titulación y ver sus detalles.</p>
+      </div>
+
+      <!-- ESTADO CON DATOS -->
+      <div id="resultado-datos" class="hidden bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 p-8 h-full flex-col opacity-0 transition-opacity duration-500">
+        
+        <div class="mb-8 border-b border-slate-100 pb-6">
+          <div class="flex flex-wrap gap-2 mb-4">
+            <div id="res-tipo" class="inline-flex items-center px-3 py-1 rounded-full bg-brand-dark/10 text-brand-dark text-xs font-semibold uppercase tracking-wider">Tipo</div>
+            <div id="res-siglas" class="inline-flex items-center px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-bold uppercase tracking-wider">SIGLAS</div>
+          </div>
+          <h3 id="res-programa" class="text-2xl font-bold text-slate-900 leading-tight">Programa</h3>
+          <p class="text-slate-500 mt-2 flex items-center text-sm">
+            <svg class="w-4 h-4 mr-1.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M10.25 2.5a.75.75 0 0 0-.75.75V4.5H5.75A2.25 2.25 0 0 0 3.5 6.75v12.75h-.75a.75.75 0 0 0 0 1.5h18.5a.75.75 0 0 0 0-1.5h-.75V8.75a2.25 2.25 0 0 0-2.25-2.25H14.5v-3.25a.75.75 0 0 0-.75-.75h-3.5ZM14.5 8h3.75c.41 0 .75.34.75.75v10.75h-14V6.75c0-.41.34-.75.75-.75h8.75V8Zm-1.5-4v2.5h-2v-2.5h2Zm-5 5.25c0-.41.34-.75.75-.75h1a.75.75 0 0 1 .75.75v1a.75.75 0 0 1-.75.75h-1a.75.75 0 0 1-.75-.75v-1Zm0 4.25c0-.41.34-.75.75-.75h1a.75.75 0 0 1 .75.75v1a.75.75 0 0 1-.75.75h-1a.75.75 0 0 1-.75-.75v-1Zm4.25-4.25c0-.41.34-.75.75-.75h1a.75.75 0 0 1 .75.75v1a.75.75 0 0 1-.75.75h-1a.75.75 0 0 1-.75-.75v-1Zm0 4.25c0-.41.34-.75.75-.75h1a.75.75 0 0 1 .75.75v1a.75.75 0 0 1-.75.75h-1a.75.75 0 0 1-.75-.75v-1Z"/>
+            </svg>
+            <span id="res-facultad">Facultad</span>
+          </p>
+        </div>
+
+        <div class="space-y-6 flex-grow">
+          <!-- Fecha CF -->
+          <div id="res-fecha-cf-container" class="hidden bg-brand-accent/5 rounded-xl p-5 border border-brand-accent/20 items-start">
+            <div class="bg-white p-3 rounded-lg shadow-sm border border-brand-accent/20 mr-4">
+              <svg class="w-6 h-6 text-brand-accent" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12.5 2.5a.75.75 0 0 0-1.5 0v1h-5v-1a.75.75 0 0 0-1.5 0v1A2.5 2.5 0 0 0 2 6v12A2.5 2.5 0 0 0 4.5 20h7.62c-.08-.49-.12-.99-.12-1.5 0-.58.07-1.15.2-1.7H4.5a1 1 0 0 1-1-1V8.5h17V10.22c.57.17 1.09.43 1.5.76V6A2.5 2.5 0 0 0 19.5 3.5v-1a.75.75 0 0 0-1.5 0v1h-5.5v-1ZM3.5 7v-1a1 1 0 0 1 1-1h15a1 1 0 0 1 1 1v1h-17ZM23 17.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0Zm-5.5-3.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .15.35l1.5 1.5a.5.5 0 0 0 .7-.71l-1.35-1.35V14.5a.5.5 0 0 0-.5-.5Z"/>
+              </svg>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-brand-accent mb-1">Fecha de Inicio Complementos Formativos</p>
+              <p id="res-fecha-cf" class="text-lg font-semibold text-brand-accent">Fecha</p>
+            </div>
+          </div>
+
+          <!-- Fecha Curso -->
+          <div class="bg-slate-50 rounded-xl p-5 border border-slate-100 flex items-start">
+            <div class="bg-white p-3 rounded-lg shadow-sm border border-slate-200 mr-4">
+              <svg class="w-6 h-6 text-brand-light" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M17.5 3.5a2.5 2.5 0 0 1 2.5 2.5v12a2.5 2.5 0 0 1-2.5 2.5H6.5A2.5 2.5 0 0 1 4 18V6a2.5 2.5 0 0 1 2.5-2.5h11ZM5.5 8v10c0 .55.45 1 1 1h11c.55 0 1-.45 1-1V8h-13ZM12 2.5a.75.75 0 0 1 .75.75V4h4.75c.55 0 1 .45 1 1v1.5h-13V5c0-.55.45-1 1-1H11.25V3.25A.75.75 0 0 1 12 2.5ZM7 11.5a1 1 0 1 1 0 2 1 1 0 0 1 0-2Zm5 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2Zm5 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2Zm-10 4a1 1 0 1 1 0 2 1 1 0 0 1 0-2Zm5 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2Zm5 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2Z"/>
+              </svg>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-slate-500 mb-1">Fecha de Inicio del Curso</p>
+              <p id="res-fecha" class="text-lg font-semibold text-slate-900">Fecha</p>
+            </div>
+          </div>
+
+          <!-- Enlaces -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8">
+            <a id="btn-aula-link" href="#" target="_blank" rel="noopener noreferrer" class="hidden group flex-col items-center justify-center p-6 bg-brand-dark hover:bg-brand-dark/90 text-white rounded-xl transition-all shadow-md hover:shadow-lg">
+              <svg class="w-8 h-8 mb-3 opacity-90 group-hover:scale-110 transition-transform" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M4.25 4A2.25 2.25 0 0 0 2 6.25v10.5C2 17.99 3.01 19 4.25 19H9.5v2.25H7.75a.75.75 0 0 0 0 1.5h8.5a.75.75 0 0 0 0-1.5h-1.75V19h5.25c1.24 0 2.25-1.01 2.25-2.25V6.25A2.25 2.25 0 0 0 19.75 4H4.25ZM3.5 6.25c0-.41.34-.75.75-.75h15.5c.41 0 .75.34.75.75v10.5c0 .41-.34.75-.75.75H4.25a.75.75 0 0 1-.75-.75V6.25ZM11 19v2.25h2V19h-2Z"/>
+              </svg>
+              <span class="font-semibold text-lg text-center">Acceder al Aula General</span>
+            </a>
+            <div id="btn-aula-nolink" class="hidden flex-col items-center justify-center p-6 bg-gray-100 text-gray-400 rounded-xl border border-gray-200 border-dashed">
+              <svg class="w-8 h-8 mb-3 opacity-50" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2c5.52 0 10 4.48 10 10s-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2Zm0 1.5a8.5 8.5 0 0 0-6.62 13.88l11.74-11.74A8.46 8.46 0 0 0 12 3.5Zm6.62 3.12L6.88 18.36A8.5 8.5 0 0 0 18.62 6.62Z"/>
+              </svg>
+              <span class="font-medium text-center text-gray-500">Aula General</span>
+              <span class="text-xs mt-1 text-gray-400">Enlace no disponible aún</span>
+            </div>
+
+            <a id="btn-cal-link" href="#" target="_blank" rel="noopener noreferrer" class="hidden group flex-col items-center justify-center p-6 bg-brand-light hover:bg-brand-light/90 text-white rounded-xl transition-all shadow-md hover:shadow-lg">
+              <svg class="w-8 h-8 mb-3 opacity-90 group-hover:scale-110 transition-transform" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M17.5 3.5a2.5 2.5 0 0 1 2.5 2.5v12a2.5 2.5 0 0 1-2.5 2.5H6.5A2.5 2.5 0 0 1 4 18V6a2.5 2.5 0 0 1 2.5-2.5h11ZM5.5 8v10c0 .55.45 1 1 1h11c.55 0 1-.45 1-1V8h-13ZM12 2.5a.75.75 0 0 1 .75.75V4h4.75c.55 0 1 .45 1 1v1.5h-13V5c0-.55.45-1 1-1H11.25V3.25A.75.75 0 0 1 12 2.5ZM7 11.5a1 1 0 1 1 0 2 1 1 0 0 1 0-2Zm5 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2Zm5 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2Zm-10 4a1 1 0 1 1 0 2 1 1 0 0 1 0-2Zm5 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2Zm5 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2Z"/>
+              </svg>
+              <span class="font-semibold text-lg text-center">Ver Calendario</span>
+            </a>
+            <div id="btn-cal-nolink" class="hidden flex-col items-center justify-center p-6 bg-gray-100 text-gray-400 rounded-xl border border-gray-200 border-dashed">
+              <svg class="w-8 h-8 mb-3 opacity-50" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2c5.52 0 10 4.48 10 10s-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2Zm0 1.5a8.5 8.5 0 0 0-6.62 13.88l11.74-11.74A8.46 8.46 0 0 0 12 3.5Zm6.62 3.12L6.88 18.36A8.5 8.5 0 0 0 18.62 6.62Z"/>
+              </svg>
+              <span class="font-medium text-center text-gray-500">Calendario</span>
+              <span class="text-xs mt-1 text-gray-400">Enlace no disponible aún</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const CSV_RAW_DATA = `Facultad,Tipo Programa,Programa,Siglas,Cod. Programa,Start Date CF,Start date programa,enlace AG,enlace calendario,Columna1,,observaciones
+ES.Ing,Ciencia y Tecnología,Máster Oficial,Máster Universitario en Big Data y Ciencia de Datos,MBID,P025,1-7-26,20-10-26,https://learn.universidadviu.com/ultra/courses/_246004_1/outline,https://learn.universidadviu.com/ultra/courses/_246004_1/outline/edit/document/_9764666_1?courseId=_246004_1&view=content&state=view,,,
+ES.Ing,Ciencia y Tecnología,Máster Oficial,Máster Universitario en Energías Renovables,MERR,P035,1-7-26,26-10-26,https://learn.universidadviu.com/ultra/courses/_246007_1/outline,https://learn.universidadviu.com/ultra/courses/_246007_1/outline/edit/document/_9764932_1?courseId=_246007_1&view=content&state=view,,,
+ES.Ing,Ciencia y Tecnología,Máster Oficial,Máster Universitario en Ingeniería Industrial,MUIN,P053,1-7-26,26-10-26,https://learn.universidadviu.com/ultra/courses/_246011_1/outline,https://learn.universidadviu.com/ultra/courses/_246011_1/outline/edit/document/_9765288_1?courseId=_246011_1&view=content&state=view,,,
+ES.Ing,Ciencia y Tecnología,Máster Oficial,Máster Universitario en Inteligencia Artificial,MIAR,P056,1-7-26,22-10-26,https://learn.universidadviu.com/ultra/courses/_246013_1/outline,https://learn.universidadviu.com/ultra/courses/_246013_1/outline/edit/document/_9765466_1?courseId=_246013_1&view=content&state=view,,,
+F. Artes,Hum,Comunicación,Máster Oficial,Máster Universitario en Gestión del Patrimonio Cultural y Museología,MPCM,P068,1-7-26,21-10-26,https://learn.universidadviu.com/ultra/courses/_246030_1/outline,https://learn.universidadviu.com/ultra/courses/_246030_1/outline/edit/document/_9766980_1?courseId=_246030_1&view=content&state=view,,,
+F. Artes,Hum,Comunicación,Máster Oficial,Máster Universitario en Periodismo Multimedia,MUPE,P087,1-7-26,26-10-26,https://learn.universidadviu.com/ultra/courses/_246032_1/outline,https://learn.universidadviu.com/ultra/courses/_246032_1/outline/edit/document/_9767156_1?courseId=_246032_1&view=content&state=view,,,
+F. Artes,Hum,Comunicación,Máster Oficial,Máster Universitario en Traducción Editorial,MEDI,P066,1-7-26,26-10-26,https://learn.universidadviu.com/ultra/courses/_246033_1/outline,https://learn.universidadviu.com/ultra/courses/_246033_1/outline/edit/document/_9767244_1?courseId=_246033_1&view=content&state=view,,,
+F. CC. SS. Y Jurídicas,Grado,Grado en Administración y Dirección de Empresas,GADE,G026,,13-10-26,https://learn.universidadviu.com/ultra/courses/_246034_1/outline,https://learn.universidadviu.com/ultra/courses/_246034_1/outline/edit/document/_9767332_1?courseId=_246034_1&view=content&state=view,,,
+F. CC. SS. Y Jurídicas,Grado,Grado en Administración y Dirección de Empresas - Plan 2020,GADE,G020,,12-10-26,,,,,
+F. CC. SS. Y Jurídicas,Grado,Grado en Criminología y Ciencias de la Seguridad,GCRI,G041,,13-10-26,https://learn.universidadviu.com/ultra/courses/_246035_1/outline,https://learn.universidadviu.com/ultra/courses/_246035_1/outline/edit/document/_9767423_1?courseId=_246035_1&view=content&state=view,,,
+F. CC. SS. Y Jurídicas,Grado,Grado en Derecho,GDER,G032,,13-10-26,https://learn.universidadviu.com/ultra/courses/_246036_1/outline,https://learn.universidadviu.com/ultra/courses/_246036_1/outline/edit/document/_9767512_1?courseId=_246036_1&view=content&state=view,,,
+F. CC. SS. Y Jurídicas,Grado,Grado en Finanzas y Contabilidad,GFYC,G033,,13-10-26,https://learn.universidadviu.com/ultra/courses/_246039_1/outline,https://learn.universidadviu.com/ultra/courses/_246039_1/outline/edit/document/_9767780_1?courseId=_246039_1&view=content&state=view,,,
+F. CC. SS. Y Jurídicas,Grado,Grado en Gestión Logística y Transporte,GLYT,G029,,13-10-26,https://learn.universidadviu.com/ultra/courses/_246040_1/outline,https://learn.universidadviu.com/ultra/courses/_246040_1/outline/edit/document/_9767868_1?courseId=_246040_1&view=content&state=view,,,
+F. CC. SS. Y Jurídicas,Grado,Grado en Marketing,GMAR,G013,,13-10-26,https://learn.universidadviu.com/ultra/courses/_246041_1/outline,https://learn.universidadviu.com/ultra/courses/_246041_1/outline/edit/document/_9767956_1?courseId=_246041_1&view=content&state=view,,,
+F. CC. SS. Y Jurídicas,Grado,Grado en Recursos Humanos y Relaciones Laborales,GRHU,G025,,13-10-26,https://learn.universidadviu.com/ultra/courses/_246042_1/outline,https://learn.universidadviu.com/ultra/courses/_246042_1/outline/edit/document/_9768046_1?courseId=_246042_1&view=content&state=view,,,
+F. CC. SS. Y Jurídicas,Grado,Grado en Relaciones Internacionales,GREL,G010,,13-10-26,https://learn.universidadviu.com/ultra/courses/_246043_1/outline,https://learn.universidadviu.com/ultra/courses/_246043_1/outline/edit/document/_9768136_1?courseId=_246043_1&view=content&state=view,,,
+F. Ciencias de la Salud,Máster Oficial,Máster Universitario en Bioinformática,MBIF,P063,1-9-26,26-10-26,https://learn.universidadviu.com/ultra/courses/_246093_1/outline,https://learn.universidadviu.com/ultra/courses/_246093_1/outline/edit/document/_9772582_1?courseId=_246093_1&linkContentId=_9772582_1,.,,
+F. Ciencias de la Salud,Máster Oficial,Máster Universitario en Dirección Sanitaria y Gestión Clínica,MDGC,P060,1-9-26,26-10-26,https://learn.universidadviu.com/ultra/courses/_246097_1/outline,https://learn.universidadviu.com/ultra/courses/_246097_1/outline/edit/document/_9772940_1?courseId=_246097_1&view=content&state=view,.,,
+F. Ciencias de la Salud,Máster Oficial,Máster Universitario en Gerontología y Atención Centrada en la Persona,MGER,P016,1-9-26,26-10-26,https://learn.universidadviu.com/ultra/courses/_246101_1/outline,https://learn.universidadviu.com/ultra/courses/_246101_1/outline/edit/document/_9773295_1?courseId=_246101_1&view=content&state=view,.,,
+F. Ciencias de la Salud,Máster Oficial,Máster Universitario en Psicología de la Educación,MPSE,P100,1-9-26,26-10-26,https://learn.universidadviu.com/ultra/courses/_246108_1/outline,https://learn.universidadviu.com/ultra/courses/_246108_1/outline/edit/document/_9773913_1?courseId=_246108_1&view=content&state=view,.,,calendario orden incorrecto
+F. Ciencias Educación,Grado,Grado en Educación Infantil,GEIN,G002,,12-10-26,https://learn.universidadviu.com/ultra/courses/_246064_1/outline,https://learn.universidadviu.com/ultra/courses/_246064_1/outline/edit/document/_9770001_1?courseId=_246064_1&view=content&state=view,,,
+F. CC. SS. Y Jurídicas,Máster Propio,Máster en Formación Permanente en IA para el Sector Financiero,PIAS,M102,,26-10-26,https://learn.universidadviu.com/ultra/courses/_246044_1/outline,https://learn.universidadviu.com/ultra/courses/_246044_1/outline/edit/document/_9768224_1?courseId=_246044_1&view=content&state=view,,,
+F. Ciencias Educación,Grado,Grado en Educación Primaria,GEPR,G028,,13-10-26,https://learn.universidadviu.com/ultra/courses/_246065_1/outline,https://learn.universidadviu.com/ultra/courses/_246065_1/outline/edit/document/_9770089_1?courseId=_246065_1&view=content&state=view,,,
+ES.Ing,Ciencia y Tecnología,Máster Oficial,Máster Universitario en Ingeniería Biomédica - 2026,MIBI,P101,1-9-26,2-11-26,https://learn.universidadviu.com/ultra/courses/_246009_1/outline,https://learn.universidadviu.com/ultra/courses/_246009_1/outline/edit/document/_9765110_1?courseId=_246009_1&view=content&state=view,,,
+F. Ciencias de la Salud,Máster Oficial,Máster Universitario en Ciencias Avanzadas de la Nutrición Humana,MCAN,P038,1-9-26,26-10-26,https://learn.universidadviu.com/ultra/courses/_246094_1/outline,https://learn.universidadviu.com/ultra/courses/_246094_1/outline/edit/document/_9772670_1?courseId=_246094_1&view=content&state=view,.,,
+F. CC. SS. Y Jurídicas,Máster Propio,Máster en Formación Permanente en IA para la Transformación e Innovación de Negocio,PIAT,M099,,26-10-26,https://learn.universidadviu.com/ultra/courses/_246045_1/outline,https://learn.universidadviu.com/ultra/courses/_246045_1/outline/edit/document/_9768314_1?courseId=_246045_1&view=content&state=view,,,
+F. Ciencias Educación,Grado,Grado en Educación Primaria_ Plan 2010,GEPR,G001,,13-10-26,https://learn.universidadviu.com/ultra/courses/_246066_1/outline,https://learn.universidadviu.com/ultra/courses/_246066_1/outline/edit/document/_9770180_1?courseId=_246066_1&view=content&state=view,,,
+F. Ciencias de la Salud,Máster Oficial,Máster Universitario en Epidemiología y Salud Pública,MUES,P090,7-9-26,21-10-26,https://learn.universidadviu.com/ultra/courses/_246099_1/outline,https://learn.universidadviu.com/ultra/courses/_246099_1/outline/edit/document/_9773117_1?courseId=_246099_1&view=content&state=view,.,,
+F. Ciencias de la Salud,Máster Oficial,Máster Universitario en Neurociencia e Investigación en Imagen Neurológica,MNUC,P081,7-9-26,20-10-26,https://learn.universidadviu.com/ultra/courses/_246103_1/outline,https://learn.universidadviu.com/ultra/courses/_246103_1/outline/edit/document/_9773471_1?courseId=_246103_1&view=content&state=view,.,,
+F. Ciencias de la Salud,Máster Oficial,Máster Universitario en Nutrición y Salud,MUNS,P012,9-9-26,26-10-26,https://learn.universidadviu.com/ultra/courses/_246105_1/outline,https://learn.universidadviu.com/ultra/courses/_246105_1/outline/edit/document/_9773648_1?courseId=_246105_1&view=content&state=view,.,,
+F. Ciencias de la Salud,Máster Oficial,Máster Universitario en Cuidados de Enfermería en Reanimación y Medicina Intensiva,MCUI,P086,,6-10-26,https://learn.universidadviu.com/ultra/courses/_246095_1/outline,https://learn.universidadviu.com/ultra/courses/_246095_1/outline/edit/document/_9772758_1?courseId=_246095_1&view=content&state=view,.,,
+F. Ciencias de la Salud,Máster Oficial,Máster Universitario en Cuidados de Enfermería en Urgencias y Emergencias,MCEU,P051,,6-10-26,https://learn.universidadviu.com/ultra/courses/_246096_1/outline,https://learn.universidadviu.com/ultra/courses/_246096_1/outline/edit/document/_9772851_1?courseId=_246096_1&view=content&state=view,.,,
+ES.Ing,Ciencia y Tecnología,Grado,Grado en Ciberseguridad,GCIB,G038,,14-10-26,https://learn.universidadviu.com/ultra/courses/_245993_1/outline,https://learn.universidadviu.com/ultra/courses/_245993_1/outline/edit/document/_9763688_1?courseId=_245993_1&view=content&state=view,,,
+ES.Ing,Ciencia y Tecnología,Grado,Grado en Ciencia de Datos e Inteligencia Artificial,GIAR,G030,,13-10-26,https://learn.universidadviu.com/ultra/courses/_245994_1/outline,https://learn.universidadviu.com/ultra/courses/_245994_1/outline/edit/document/_9763780_1?courseId=_245994_1&view=content&state=view,,,
+ES.Ing,Ciencia y Tecnología,Grado,Grado en Física,GFIS,G027,,13-10-26,https://learn.universidadviu.com/ultra/courses/_245995_1/outline,https://learn.universidadviu.com/ultra/courses/_245995_1/outline/edit/document/_9763868_1?courseId=_245995_1&view=content&state=view,,,
+ES.Ing,Ciencia y Tecnología,Grado,Grado en Ingeniería en Tecnologías y Servicios de Telecomunicación,GTEL,G035,,14-10-26,https://learn.universidadviu.com/ultra/courses/_245997_1/outline,https://learn.universidadviu.com/ultra/courses/_245997_1/outline/edit/document/_9764046_1?courseId=_245997_1&view=content&state=view,,,
+ES.Ing,Ciencia y Tecnología,Grado,Grado en Ingeniería Informática_ Plan 2018,GIIN,G009,,14-10-26,https://learn.universidadviu.com/ultra/courses/_245998_1/outline,https://learn.universidadviu.com/ultra/courses/_245998_1/outline/edit/document/_9764136_1?courseId=_245998_1&view=content&state=view,,,
+ES.Ing,Ciencia y Tecnología,Grado,Grado en Matemáticas,GMAT,G019,,14-10-26,https://learn.universidadviu.com/ultra/courses/_245999_1/outline,https://learn.universidadviu.com/ultra/courses/_245999_1/outline/edit/document/_9764224_1?courseId=_245999_1&view=content&state=view,,,
+F. Artes,Hum,Comunicación,Grado,Grado en Comunicación,GCOM,G014,,13-10-26,https://learn.universidadviu.com/ultra/courses/_246018_1/outline,https://learn.universidadviu.com/ultra/courses/_246018_1/outline/edit/document/_9765910_1?courseId=_246018_1&view=content&state=view,,,
+F. Artes,Hum,Comunicación,Grado,Grado en Historia,GHIS,G024,,13-10-26,https://learn.universidadviu.com/ultra/courses/_246019_1/outline,https://learn.universidadviu.com/ultra/courses/_246019_1/outline/edit/document/_9766000_1?courseId=_246019_1&view=content&state=view,,,
+F. Artes,Hum,Comunicación,Grado,Grado en Humanidades,GHUM,G023,,13-10-26,https://learn.universidadviu.com/ultra/courses/_246020_1/outline,https://learn.universidadviu.com/ultra/courses/_246020_1/outline/edit/document/_9766088_1?courseId=_246020_1&view=content&state=view,,,
+F. Artes,Hum,Comunicación,Grado,Grado en Lengua y Literatura Españolas,GLEN,G036,,13-10-26,https://learn.universidadviu.com/ultra/courses/_246021_1/outline,https://learn.universidadviu.com/ultra/courses/_246021_1/outline/edit/document/_9766178_1?courseId=_246021_1&view=content&state=view,,,
+F. Artes,Hum,Comunicación,Grado,Grado en Musicología,GMUS,G016,,13-10-26,https://learn.universidadviu.com/ultra/courses/_246022_1/outline,https://learn.universidadviu.com/ultra/courses/_246022_1/outline/edit/document/_9766266_1?courseId=_246022_1&view=content&state=view,,,
+F. Artes,Hum,Comunicación,Grado,Grado en Traducción e Interpretación,GTRA,G007,,13-10-26,https://learn.universidadviu.com/ultra/courses/_246023_1/outline,https://learn.universidadviu.com/ultra/courses/_246023_1/outline/edit/document/_9766356_1?courseId=_246023_1&view=content&state=view,,,
+F. CC. SS. Y Jurídicas,Máster Oficial,"Máster Universitario en Abogacía, Procura y Práctica Jurídica",MJUR,P088,,26-10-26,https://learn.universidadviu.com/ultra/courses/_246046_1/outline,https://learn.universidadviu.com/ultra/courses/_246046_1/outline/edit/document/_9768402_1?courseId=_246046_1&view=content&state=view,,,
+F. CC. SS. Y Jurídicas,Máster Oficial,Máster Universitario en Administración y Dirección de Empresas (MBA),MMBA,P014,1-9-26,26-10-26,https://learn.universidadviu.com/ultra/courses/_246047_1/outline,https://learn.universidadviu.com/ultra/courses/_246047_1/outline/edit/document/_9768492_1?courseId=_246047_1&view=content&state=view,,,
+F. CC. SS. Y Jurídicas,Máster Oficial,Máster Universitario en Criminología. Delincuencia y Victimología,MCRI,P013,1-9-26,26-10-26,https://learn.universidadviu.com/ultra/courses/_246048_1/outline,https://learn.universidadviu.com/ultra/courses/_246048_1/outline/edit/document/_9768580_1?courseId=_246048_1&view=content&state=view,,,
+F. CC. SS. Y Jurídicas,Máster Oficial,Máster Universitario en Derecho Digital y de la Ciberseguridad,MDIG,P085,,26-10-26,https://learn.universidadviu.com/ultra/courses/_246049_1/outline,https://learn.universidadviu.com/ultra/courses/_246049_1/outline/edit/document/_9768670_1?courseId=_246049_1&view=content&state=view,,,
+F. CC. SS. Y Jurídicas,Máster Oficial,Máster Universitario en Dirección de Marketing y Gestión Comercial,MDIR,P028,1-9-26,26-10-26,https://learn.universidadviu.com/ultra/courses/_246050_1/outline,https://learn.universidadviu.com/ultra/courses/_246050_1/outline/edit/document/_9768759_1?courseId=_246050_1&view=content&state=view,,,
+F. CC. SS. Y Jurídicas,Máster Oficial,Máster Universitario en Dirección y Gestión de Personas,MPER,P059,1-9-26,26-10-26,https://learn.universidadviu.com/ultra/courses/_246051_1/outline,https://learn.universidadviu.com/ultra/courses/_246051_1/outline/edit/document/_9768848_1?courseId=_246051_1&view=content&state=view,,,
+F. CC. SS. Y Jurídicas,Máster Oficial,Máster Universitario en Dirección y Gestión Financiera,MDIF,P078,1-9-26,26-10-26,https://learn.universidadviu.com/ultra/courses/_246052_1/outline,https://learn.universidadviu.com/ultra/courses/_246052_1/outline/edit/document/_9768936_1?courseId=_246052_1&view=content&state=view,,,
+F. CC. SS. Y Jurídicas,Máster Oficial,Máster Universitario en Economía Circular y Desarrollo Sostenible,MECI,P049,1-9-26,26-10-26,https://learn.universidadviu.com/ultra/courses/_246053_1/outline,https://learn.universidadviu.com/ultra/courses/_246053_1/outline/edit/document/_9769024_1?courseId=_246053_1&view=content&state=view,,,
+F. CC. SS. Y Jurídicas,Máster Oficial,Máster Universitario en Gestión de Proyectos / Project Management,MMAN,P029,1-9-26,26-10-26,https://learn.universidadviu.com/ultra/courses/_246054_1/outline,https://learn.universidadviu.com/ultra/courses/_246054_1/outline/edit/document/_9769112_1?courseId=_246054_1&view=content&state=view,,,
+F. Ciencias de la Salud,Grado,Grado en Psicología,GPSI,G031,,13-10-26,https://learn.universidadviu.com/ultra/courses/_246088_1/outline,https://learn.universidadviu.com/ultra/courses/_246088_1/outline/edit/document/_9772128_1?courseId=_246088_1&view=content&state=view,.,,
+F. Ciencias Educación,Grado,Grado en Educación Social,GESO,G037,,13-10-26,https://learn.universidadviu.com/ultra/courses/_246067_1/outline,https://learn.universidadviu.com/ultra/courses/_246067_1/outline/edit/document/_9770268_1?courseId=_246067_1&view=content&state=view,,,
+F. Ciencias Educación,Grado,Grado en Pedagogía,GPED,G018,,13-10-26,https://learn.universidadviu.com/ultra/courses/_246068_1/outline,https://learn.universidadviu.com/ultra/courses/_246068_1/outline/edit/document/_9770356_1?courseId=_246068_1&view=content&state=view,,,
+ES.Ing,Ciencia y Tecnología,Grado,Grado en Ingeniería en Organización Industrial,GIOI,G022,,14-10-26,https://learn.universidadviu.com/ultra/courses/_245996_1/outline,https://learn.universidadviu.com/ultra/courses/_245996_1/outline/edit/document/_9763958_1?courseId=_245996_1&view=content&state=view,,,
+F. Ciencias de la Salud,Grado,Grado en Logopedia,GLOG,G017,,13-10-26,https://learn.universidadviu.com/ultra/courses/_246086_1/outline,https://learn.universidadviu.com/ultra/courses/_246086_1/outline/edit/document/_9771951_1?courseId=_246086_1&view=content&state=view,.,,
+F. Ciencias de la Salud,Grado,Grado en Nutrición Humana y Dietética,GNUT,G021,,13-10-26,https://learn.universidadviu.com/ultra/courses/_246087_1/outline,https://learn.universidadviu.com/ultra/courses/_246087_1/outline/edit/document/_9772040_1?courseId=_246087_1&view=content&state=view,.,,
+F. Ciencias de la Salud,Grado,Grado en Psicología_ Plan 2012 (en extinción),GPSI,G003,,13-10-26,https://learn.universidadviu.com/ultra/courses/_246089_1/outline,https://learn.universidadviu.com/ultra/courses/_246089_1/outline/edit/document/_9772216_1?courseId=_246089_1&view=content&state=view,.,,
+F. Ciencias Educación,Máster Oficial,Máster Universitario en Acoso Escolar y Mediación,MMAE,P037,,26-10-26,https://learn.universidadviu.com/ultra/courses/_246069_1/outline,https://learn.universidadviu.com/ultra/courses/_246069_1/outline/edit/document/_9770444_1?courseId=_246069_1&view=content&state=view,,,
+F. Ciencias Educación,Máster Oficial,Máster Universitario en Didáctica de las Matemáticas,MMAT,P096,,26-10-26,https://learn.universidadviu.com/ultra/courses/_246070_1/outline,https://learn.universidadviu.com/ultra/courses/_246070_1/outline/edit/document/_9770532_1?courseId=_246070_1&view=content&state=view,,,
+F. Ciencias Educación,Máster Oficial,Máster Universitario en Dificultades del Aprendizaje y Trastornos de la Comunicación en Contextos Socioeducativos,MDAT,P048,7-9-26,26-10-26,https://learn.universidadviu.com/ultra/courses/_246071_1/outline,https://learn.universidadviu.com/ultra/courses/_246071_1/outline/edit/document/_9770620_1?courseId=_246071_1&view=content&state=view,,,
+F. Ciencias Educación,Máster Oficial,"Máster Universitario en Dirección, Liderazgo y Gestión de Centros Educativos",MEDU,P050,,20-10-26,https://learn.universidadviu.com/ultra/courses/_246072_1/outline,https://learn.universidadviu.com/ultra/courses/_246072_1/outline/edit/document/_9770710_1?courseId=_246072_1&view=content&state=view,,,
+ES.Ing,Ciencia y Tecnología,Máster Oficial,Máster Universitario en Astronomía y Astrofísica,MAST,P006,,20-10-26,https://learn.universidadviu.com/ultra/courses/_246003_1/outline,https://learn.universidadviu.com/ultra/courses/_246003_1/outline/edit/document/_9764576_1?courseId=_246003_1&view=content&state=view,,,
+F. Artes,Hum,Comunicación,Máster Oficial,Máster Universitario en Interpretación e Investigación Musical,MMUS,P005,,20-10-26,https://learn.universidadviu.com/ultra/courses/_246031_1/outline,https://learn.universidadviu.com/ultra/courses/_246031_1/outline/edit/document/_9767068_1?courseId=_246031_1&view=content&state=view,,,
+ES.Ing,Ciencia y Tecnología,Máster Oficial,Master Universitario en Ingeniería y Gestión Ambiental,MGES,P072,,21-10-26,https://learn.universidadviu.com/ultra/courses/_246012_1/outline,https://learn.universidadviu.com/ultra/courses/_246012_1/outline/edit/document/_9765376_1?courseId=_246012_1&view=content&state=view,,,
+F. Ciencias Educación,Máster Oficial,Máster Universitario en Educación Bilingüe,MEDB,P034,,20-10-26,https://learn.universidadviu.com/ultra/courses/_246073_1/outline,https://learn.universidadviu.com/ultra/courses/_246073_1/outline/edit/document/_9770800_1?courseId=_246073_1&view=content&state=view,,,
+F. Ciencias Educación,Máster Oficial,Máster Universitario en Enseñanza del Español como Lengua Extranjera,MELE,P032,1-9-26,20-10-26,https://learn.universidadviu.com/ultra/courses/_246074_1/outline,https://learn.universidadviu.com/ultra/courses/_246074_1/outline/edit/document/_9770888_1?courseId=_246074_1&view=content&state=view,,,
+F. Ciencias Educación,Máster Oficial,Máster Universitario en Investigación en Educación,MINE,P083,,20-10-26,https://learn.universidadviu.com/ultra/courses/_246075_1/outline,https://learn.universidadviu.com/ultra/courses/_246075_1/outline/edit/document/_9770978_1?courseId=_246075_1&view=content&state=view,,,
+F. Ciencias Educación,Máster Oficial,Máster Universitario en Metodologías Activas y Digitales,MADI,P097,,20-10-26,https://learn.universidadviu.com/ultra/courses/_246076_1/outline,https://learn.universidadviu.com/ultra/courses/_246076_1/outline/edit/document/_9771066_1?courseId=_246076_1&view=content&state=view,,,
+F. CC. SS. Y Jurídicas,Máster Oficial,Máster Universitario en Gestión Deportiva,MMGD,P031,,21-10-26,https://learn.universidadviu.com/ultra/courses/_246055_1/outline,https://learn.universidadviu.com/ultra/courses/_246055_1/outline/edit/document/_9769200_1?courseId=_246055_1&view=content&state=view,,,
+ES.Ing,Ciencia y Tecnología,Máster Propio,Máster en Formación Permanente en Inteligencia Artificial para la Innovación Tecnológica,PIAA,M111,,26-10-26,https://learn.universidadviu.com/ultra/courses/_259556_1/outline,https://learn.universidadviu.com/ultra/courses/_259556_1/outline/edit/document/_10826943_1?courseId=_259556_1&view=content&state=view,no está el caendario,,
+ES.Ing,Ciencia y Tecnología,Máster Oficial,Máster Universitario en Robótica y Automatización de Procesos,MROB,P080,,26-10-26,https://learn.universidadviu.com/ultra/courses/_246014_1/outline,https://learn.universidadviu.com/ultra/courses/_246014_1/outline/edit/document/_9765554_1?courseId=_246014_1&view=content&state=view,,,
+F. Artes,Hum,Comunicación,Máster Propio,Máster en Formación Permanente en Creación Literaria - 2026,MPCL,M110,,26-10-26,https://learn.universidadviu.com/ultra/courses/_257358_1/outline,https://learn.universidadviu.com/ultra/courses/_257358_1/outline/edit/document/_10633389_1?courseId=_257358_1&view=content&state=view,,,
+F. Artes,Hum,Comunicación,Máster Propio,Máster en Formación Permanente en Edición y Gestión Editorial,MEGE,M064,,26-10-26,https://learn.universidadviu.com/ultra/courses/_246025_1/outline,https://learn.universidadviu.com/ultra/courses/_246025_1/outline/edit/document/_9766535_1?courseId=_246025_1&view=content&state=view,,,
+F. Ciencias de la Salud,Máster Oficial,Máster Universitario en Neuropsicología Clínica,MNEU,P026,,26-10-26,https://learn.universidadviu.com/ultra/courses/_246104_1/outline,https://learn.universidadviu.com/ultra/courses/_246104_1/outline/edit/document/_9773560_1?courseId=_246104_1&view=content&state=view,.,,
+F. Ciencias de la Salud,Máster Oficial,Máster Universitario en Prevención e Intervención Psicológica en Problemas de Conducta en la Escuela,MPRE,P001,,26-10-26,https://learn.universidadviu.com/ultra/courses/_246106_1/outline,https://learn.universidadviu.com/ultra/courses/_246106_1/outline/edit/document/_9773737_1?courseId=_246106_1&view=content&state=view,.,,
+F. Ciencias de la Salud,Máster Oficial,Máster Universitario en Prevención en Drogodependencias y otras conductas adictivas,MDRO,P020,,26-10-26,https://learn.universidadviu.com/ultra/courses/_246107_1/outline,https://learn.universidadviu.com/ultra/courses/_246107_1/outline/edit/document/_9773825_1?courseId=_246107_1&view=content&state=view,.,,
+F. Ciencias de la Salud,Máster Oficial,Máster Universitario en Psicología de la Infancia y la Adolescencia,MADO,P062,,26-10-26,https://learn.universidadviu.com/ultra/courses/_246110_1/outline,https://learn.universidadviu.com/ultra/courses/_246110_1/outline/edit/document/_9774090_1?courseId=_246110_1&view=content&state=view,.,,
+F. Ciencias de la Salud,Máster Oficial,Máster Universitario en Psicología de la Intervención Social y Comunitaria,MPSI,P071,,26-10-26,https://learn.universidadviu.com/ultra/courses/_246109_1/outline,https://learn.universidadviu.com/ultra/courses/_246109_1/outline/edit/document/_9774002_1?courseId=_246109_1&view=content&state=view,.,,
+F. Ciencias de la Salud,Máster Oficial,Máster Universitario en Psicología General Sanitaria - 2022,MPGS,P076,,26-10-26,https://learn.universidadviu.com/ultra/courses/_246111_1/outline,https://learn.universidadviu.com/ultra/courses/_246111_1/outline/edit/document/_9774179_1?courseId=_246111_1&view=content&state=view,.,,
+F. Ciencias de la Salud,Máster Oficial,Máster Universitario en Psicología Jurídica,MPJU,P046,,26-10-26,https://learn.universidadviu.com/ultra/courses/_246112_1/outline,https://learn.universidadviu.com/ultra/courses/_246112_1/outline/edit/document/_9774268_1?courseId=_246112_1&view=content&state=view,.,,
+F. Ciencias de la Salud,Máster Oficial,Máster Universitario en Trabajo Social en el Ámbito Sanitario,MSAN,P075,,26-10-26,https://learn.universidadviu.com/ultra/courses/_246114_1/outline,https://learn.universidadviu.com/ultra/courses/_246114_1/outline/edit/document/_9774445_1?courseId=_246114_1&view=content&state=view,.,,
+ES.Ing,Ciencia y Tecnología,Máster Oficial,Máster Universitario en Ciberseguridad,MCYB,P058,,26-10-26,https://learn.universidadviu.com/ultra/courses/_246005_1/outline,https://learn.universidadviu.com/ultra/courses/_246005_1/outline/edit/document/_9764754_1?courseId=_246005_1&view=content&state=view,,,
+ES.Ing,Ciencia y Tecnología,Máster Oficial,Máster Universitario en Gestión de las Tecnologías de la Información y la Comunicación,MTEC,P089,,26-10-26,https://learn.universidadviu.com/ultra/courses/_246008_1/outline,https://learn.universidadviu.com/ultra/courses/_246008_1/outline/edit/document/_9765022_1?courseId=_246008_1&view=content&state=view,,,
+ES.Ing,Ciencia y Tecnología,Máster Oficial,Máster Universitario en Ingeniería en Organización Industrial,MIOI,P094,,26-10-26,https://learn.universidadviu.com/ultra/courses/_246010_1/outline,https://learn.universidadviu.com/ultra/courses/_246010_1/outline/edit/document/_9765200_1?courseId=_246010_1&view=content&state=view,,,
+F. Artes,Hum,Comunicación,Máster Oficial,Máster Universitario en Comunicación Social de la Investigación Científica,MICC,P015,,26-10-26,https://learn.universidadviu.com/ultra/courses/_246028_1/outline,https://learn.universidadviu.com/ultra/courses/_246028_1/outline/edit/document/_9766804_1?courseId=_246028_1&view=content&state=view,,,
+F. Artes,Hum,Comunicación,Máster Oficial,Master Universitario en Comunicación y Marketing Político,MCOM,P065,,26-10-26,https://learn.universidadviu.com/ultra/courses/_246029_1/outline,https://learn.universidadviu.com/ultra/courses/_246029_1/outline/edit/document/_9766892_1?courseId=_246029_1&view=content&state=view,,,
+F. CC. SS. Y Jurídicas,Máster Oficial,Máster Universitario en Gestión Integral de la Calidad,MGCA,P043,,26-10-26,https://learn.universidadviu.com/ultra/courses/_246056_1/outline,https://learn.universidadviu.com/ultra/courses/_246056_1/outline/edit/document/_9769290_1?courseId=_246056_1&view=content&state=view,,,
+F. CC. SS. Y Jurídicas,Máster Oficial,Máster Universitario en Inteligencia de Negocio,MMAD,P092,1-9-26,26-10-26,https://learn.universidadviu.com/ultra/courses/_246057_1/outline,https://learn.universidadviu.com/ultra/courses/_246057_1/outline/edit/document/_9769378_1?courseId=_246057_1&view=content&state=view,,,
+F. CC. SS. Y Jurídicas,Máster Oficial,Máster Universitario en Intervención Interdisciplinar en Violencia de Género,MUVG,P040,7-9-26,21-10-26,https://learn.universidadviu.com/ultra/courses/_246058_1/outline,https://learn.universidadviu.com/ultra/courses/_246058_1/outline/edit/document/_9769468_1?courseId=_246058_1&view=content&state=view,,,
+F. CC. SS. Y Jurídicas,Máster Oficial,Máster Universitario en Marketing Digital y Analítico,MMAD,P054,1-9-26,26-10-26,https://learn.universidadviu.com/ultra/courses/_246059_1/outline,https://learn.universidadviu.com/ultra/courses/_246059_1/outline/edit/document/_9769556_1?courseId=_246059_1&view=content&state=view,,,
+F. CC. SS. Y Jurídicas,Máster Oficial,Máster Universitario en Mediación y Gestión del Conflicto,MMED,P017,1-9-26,20-10-26,https://learn.universidadviu.com/ultra/courses/_246060_1/outline,https://learn.universidadviu.com/ultra/courses/_246060_1/outline/edit/document/_9769644_1?courseId=_246060_1&view=content&state=view,,,
+F. CC. SS. Y Jurídicas,Máster Oficial,Máster Universitario en Prevención de Riesgos Laborales,MPRL,P018,,26-10-26,https://learn.universidadviu.com/ultra/courses/_246061_1/outline,https://learn.universidadviu.com/ultra/courses/_246061_1/outline/edit/document/_9769735_1?courseId=_246061_1&view=content&state=view,,,
+F. CC. SS. Y Jurídicas,Máster Oficial,Máster Universitario en Supply Chain Management and Logistics,MSUP,P047,1-9-26,21-10-26,https://learn.universidadviu.com/ultra/courses/_246062_1/outline,https://learn.universidadviu.com/ultra/courses/_246062_1/outline/edit/document/_9769823_1?courseId=_246062_1&view=content&state=view,,,
+F. Ciencias de la Salud,Máster Oficial,Máster Universitario en Bioética,MBIO,P030,,26-10-26,https://learn.universidadviu.com/ultra/courses/_246092_1/outline,https://learn.universidadviu.com/ultra/courses/_246092_1/outline/edit/document/_9772494_1?courseId=_246092_1&view=content&state=view,.,,
+F. Ciencias de la Salud,Máster Oficial,Máster Universitario en Dirección y Gestión de Enfermería,MDGE,P041,,26-10-26,https://learn.universidadviu.com/ultra/courses/_246098_1/outline,https://learn.universidadviu.com/ultra/courses/_246098_1/outline/edit/document/_9773028_1?courseId=_246098_1&view=content&state=view,.,,
+F. Ciencias de la Salud,Máster Oficial,Máster Universitario en Fisioterapia Neurológica,MUFI,P091,,26-10-26,https://learn.universidadviu.com/ultra/courses/_246100_1/outline,https://learn.universidadviu.com/ultra/courses/_246100_1/outline/edit/document/_9773205_1?courseId=_246100_1&view=content&state=view,.,,
+F. Ciencias Educación,Máster Oficial,Máster Universitario en Necesidades Educativas Especiales y Atención Temprana,MNEE,P010,1-9-26,26-10-26,https://learn.universidadviu.com/ultra/courses/_246077_1/outline,https://learn.universidadviu.com/ultra/courses/_246077_1/outline/edit/document/_9771156_1?courseId=_246077_1&view=content&state=view,,,
+F. Ciencias Educación,Máster Oficial,Máster Universitario en Psicopedagogía,MPSP,P027,,26-10-26,https://learn.universidadviu.com/ultra/courses/_246063_1/outline,https://learn.universidadviu.com/ultra/courses/_246063_1/outline/edit/document/_9769913_1?courseId=_246063_1&view=content&state=view,,,
+F. Ciencias Educación,Máster Oficial,Máster Universitario en Tecnologías de la Información y la Comunicación Aplicadas a la Educación,MTIC,P024,,26-10-26,https://learn.universidadviu.com/ultra/courses/_246078_1/outline,https://learn.universidadviu.com/ultra/courses/_246078_1/outline/edit/document/_9771244_1?courseId=_246078_1&view=content&state=view,,,
+F. Ciencias Educación,Grado,Mención en Audición y Lenguaje (Grado en Educación Primaria),GEPR,CE20,,1-9-26,https://learn.universidadviu.com/ultra/courses/_246079_1/outline,https://learn.universidadviu.com/ultra/courses/_246079_1/outline/edit/document/_9771332_1?courseId=_246079_1&view=content&state=view,,,
+F. Artes,Hum,Comunicación,Máster Oficial,Máster Universitario en Comunicación Corporativa y Estratégica,MCOC,P055,,27-10-26,https://learn.universidadviu.com/ultra/courses/_246027_1/outline,https://learn.universidadviu.com/ultra/courses/_246027_1/outline/edit/document/_9766713_1?courseId=_246027_1&view=content&state=view,,,
+F. Ciencias Educación,Grado,Mención en Educación Musical (Grado en Educación Primaria),GEPR,CE01,,1-9-26,https://learn.universidadviu.com/ultra/courses/_246081_1/outline,https://learn.universidadviu.com/ultra/courses/_246081_1/outline/edit/document/_9771508_1?courseId=_246081_1&view=content&state=view,,,
+F. Ciencias de la Salud,Máster Oficial,Máster Universitario en Terapias Psicológicas de Tercera Generación,MTEG,P004,,27-10-26,https://learn.universidadviu.com/ultra/courses/_246113_1/outline,https://learn.universidadviu.com/ultra/courses/_246113_1/outline/edit/document/_9774356_1?courseId=_246113_1&view=content&state=view,,,
+F. Ciencias de la Salud,Grado,Grado en Bioinformática,GBIF,G042,,13-10-26,https://learn.universidadviu.com/ultra/courses/_260237_1/outline,https://learn.universidadviu.com/ultra/courses/_260237_1/outline/edit/document/_10871635_1?courseId=_260237_1&view=content&state=view,,,
+ES.Ing,Ciencia y Tecnología,Grado,Grado en Ingeniería Informática,GIIN,G043,,13-10-26,,,aspa roja,,
+ES.Ing,Ciencia y Tecnología,Máster Oficial,Máster Universitario en Desarrollo de Aplicaciones y Servicios Web,MASW,P057,14-9-26,20-10-26,https://learn.universidadviu.com/ultra/courses/_246006_1/outline,https://learn.universidadviu.com/ultra/courses/_246006_1/outline/edit/document/_9764844_1?courseId=_246006_1&view=content&state=view,,,
+F. CC. SS. Y Jurídicas,Máster Oficial,Máster Universitario en Gestión Pública,MUGP,P103,,,https://learn.universidadviu.com/ultra/courses/_259750_1/outline,https://learn.universidadviu.com/ultra/courses/_259750_1/outline/edit/document/_10854049_1?courseId=_259750_1&view=content&state=view,no está el caendario,,
+F. CC. SS. Y Jurídicas,Grado,Grado en Criminología y Ciencias de la Seguridad_ Plan 2018,GCRI,G012,,,,,no creada aún,,
+F. Ciencias Educación,Máster Oficial,Máster Universitario en Didáctica de la Lengua Castellana y su Literatura,MUDL,P104,,26-10-26,https://learn.universidadviu.com/ultra/courses/_260239_1/outline,https://learn.universidadviu.com/ultra/courses/_260239_1/outline/edit/document/_10871888_1?courseId=_260239_1&view=content&state=view,,,
+F. Ciencias Educación,Máster Oficial,Máster Universitario en Neurociencia y Educación,MUNE,P033,1-9-26,26-10-26,https://learn.universidadviu.com/ultra/courses/_260240_1/outline,https://learn.universidadviu.com/ultra/courses/_260240_1/outline/edit/document/_10871993_1?courseId=_260240_1&view=content&state=view,aspa roja,,
+F. Ciencias Educación,Grado,Mención en Educación Física (Grado en Educación Primaria),GEPR,CE21,,1-9-26,https://learn.universidadviu.com/ultra/courses/_246080_1/outline,https://learn.universidadviu.com/ultra/courses/_246080_1/outline/edit/document/_9771420_1?courseId=_246080_1&view=content&state=view,,,
+F. Ciencias Educación,Grado,Mención en Lengua Extranjera: Inglés (Grado en Educación Primaria),GEPR,CE02,,1-9-26,https://learn.universidadviu.com/ultra/courses/_246082_1/outline,https://learn.universidadviu.com/ultra/courses/_246082_1/outline/edit/document/_9771596_1?courseId=_246082_1&view=content&state=view,,,
+F. Ciencias Educación,Grado,Mención en Pedagogía Terapéutica (Grado en Educación Primaria),GEPR,CE19,,1-9-26,https://learn.universidadviu.com/ultra/courses/_246083_1/outline,https://learn.universidadviu.com/ultra/courses/_246083_1/outline/edit/document/_9771687_1?courseId=_246083_1&view=content&state=view,,,
+`;
+
+document.addEventListener("DOMContentLoaded", () => {
+  const parsearCSV = (csvTexto) => {
+    let lineas = csvTexto.split(/\r?\n/).map(l => l.trim()).filter(l => l !== '');
+    if(lineas.length < 2) return [];
+
+    lineas = lineas.map(linea => {
+      if (linea.startsWith('"') && linea.endsWith('"') && linea.includes('""')) {
+        linea = linea.slice(1, -1).replace(/""/g, '"');
+      }
+      if (linea.startsWith('ES.Ing,Ciencia y Tecnología,')) {
+        linea = '"ES.Ing,Ciencia y Tecnología",' + linea.substring('ES.Ing,Ciencia y Tecnología,'.length);
+      } else if (linea.startsWith('F. Artes,Hum,Comunicación,')) {
+        linea = '"F. Artes,Hum,Comunicación",' + linea.substring('F. Artes,Hum,Comunicación,'.length);
+      } else if (linea.startsWith('F. CC. SS. Y Jurídicas,')) {
+        linea = '"F. CC. SS. Y Jurídicas",' + linea.substring('F. CC. SS. Y Jurídicas,'.length);
+      }
+      return linea;
+    });
+
+    const regexSplit = /,(?=(?:(?:[^"]*"){2})*[^"]*$)/;
+    const cabeceras = lineas[0].split(regexSplit).map(h => h.replace(/^"|"$/g, '').trim());
+    
+    const idxFacultad = cabeceras.indexOf('Facultad');
+    const idxTipo = cabeceras.indexOf('Tipo Programa');
+    const idxPrograma = cabeceras.indexOf('Programa');
+    const idxSiglas = cabeceras.indexOf('Siglas');
+    const idxFecha1 = cabeceras.indexOf('Start date programa');
+    const idxFecha2 = cabeceras.indexOf('Start Date CF');
+    const idxEnlaceAG = cabeceras.indexOf('enlace AG');
+    const idxEnlaceCal = cabeceras.indexOf('enlace calendario');
+
+    return lineas.slice(1).map(linea => {
+      const valores = linea.split(regexSplit).map(v => v.replace(/^"|"$/g, '').trim());
+      return {
+        facultad: valores[idxFacultad] || '',
+        tipoPrograma: valores[idxTipo] || '',
+        programa: valores[idxPrograma] || '',
+        siglas: valores[idxSiglas] || '',
+        fechaInicio: valores[idxFecha1] || '',
+        fechaInicioCF: valores[idxFecha2] || '',
+        enlaceAG: valores[idxEnlaceAG] || '',
+        enlaceCalendario: valores[idxEnlaceCal] || ''
+      };
+    }).filter(item => item.programa && item.programa.length > 2);
+  };
+
+  const datos = parsearCSV(CSV_RAW_DATA);
+  const inputBuscador = document.getElementById('buscador-titulacion');
+  const dropdownResultados = document.getElementById('dropdown-resultados');
+  const listaResultados = document.getElementById('lista-resultados');
+  const btnLimpiar = document.getElementById('btn-limpiar');
+  
+  const divVacio = document.getElementById('resultado-vacio');
+  const divDatos = document.getElementById('resultado-datos');
+  const resTipo = document.getElementById('res-tipo');
+  const resPrograma = document.getElementById('res-programa');
+  const resFacultad = document.getElementById('res-facultad');
+  const resSiglas = document.getElementById('res-siglas');
+  const resFecha = document.getElementById('res-fecha');
+  const resFechaCFContainer = document.getElementById('res-fecha-cf-container');
+  const resFechaCF = document.getElementById('res-fecha-cf');
+  const btnAulaLink = document.getElementById('btn-aula-link');
+  const btnAulaNoLink = document.getElementById('btn-aula-nolink');
+  const btnCalLink = document.getElementById('btn-cal-link');
+  const btnCalNoLink = document.getElementById('btn-cal-nolink');
+
+  // Nueva función para ignorar tildes/acentos
+  const quitarTildes = (str) => {
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  };
+
+  const formatearFecha = (fs) => {
+    if (!fs) return "Fecha no confirmada";
+    const f = new Date(fs);
+    if (isNaN(f.getTime())) return fs;
+    return f.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+  };
+
+  const show = (el, type='block') => { el.classList.remove('hidden'); el.classList.add(type === 'flex' ? 'flex' : 'block'); };
+  const hide = (el) => { el.classList.add('hidden'); el.classList.remove('flex', 'block'); };
+
+  const procesarResultado = (i) => {
+    resTipo.textContent = i.tipoPrograma;
+    resPrograma.textContent = i.programa;
+    resFacultad.textContent = i.facultad;
+    resSiglas.textContent = i.siglas;
+    resFecha.textContent = formatearFecha(i.fechaInicio);
+
+    if (i.fechaInicioCF) {
+      resFechaCF.textContent = formatearFecha(i.fechaInicioCF);
+      show(resFechaCFContainer, 'flex');
+    } else hide(resFechaCFContainer);
+
+    if (i.enlaceAG) { btnAulaLink.href = i.enlaceAG; show(btnAulaLink, 'flex'); hide(btnAulaNoLink); } 
+    else { hide(btnAulaLink); show(btnAulaNoLink, 'flex'); }
+
+    if (i.enlaceCalendario) { btnCalLink.href = i.enlaceCalendario; show(btnCalLink, 'flex'); hide(btnCalNoLink); } 
+    else { hide(btnCalLink); show(btnCalNoLink, 'flex'); }
+
+    hide(divVacio);
+    show(divDatos, 'flex');
+    setTimeout(() => divDatos.classList.add('opacity-100'), 50);
+  };
+
+  const renderizarResultados = (matches) => {
+    listaResultados.innerHTML = '';
+    if (matches.length === 0) {
+      listaResultados.innerHTML = '<li class="p-4 text-sm text-slate-500 text-center">No se encontraron titulaciones.</li>';
+      show(dropdownResultados);
+      return;
+    }
+    matches.forEach(match => {
+      const li = document.createElement('li');
+      li.className = 'p-4 hover:bg-slate-50 cursor-pointer transition-colors';
+      li.innerHTML = `<div class="flex items-start justify-between"><div class="flex-1 min-w-0"><div class="font-semibold text-slate-800 leading-tight">${match.programa}</div><div class="text-xs text-slate-500 mt-1">${match.facultad}</div></div><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200 ml-2 flex-shrink-0">${match.siglas}</span></div>`;
+      li.addEventListener('click', () => {
+        inputBuscador.value = match.programa;
+        hide(dropdownResultados);
+        procesarResultado(match);
+      });
+      listaResultados.appendChild(li);
+    });
+    show(dropdownResultados);
+  };
+
+  const resetearInterfaz = () => {
+    inputBuscador.value = '';
+    hide(btnLimpiar);
+    hide(dropdownResultados);
+    divDatos.classList.remove('opacity-100');
+    setTimeout(() => { hide(divDatos); show(divVacio, 'flex'); }, 300);
+  };
+
+  inputBuscador.addEventListener('input', (e) => {
+    const q = e.target.value.toLowerCase().trim();
+    const qNormalizado = quitarTildes(q);
+
+    if (q.length > 0) show(btnLimpiar, 'flex');
+    else { hide(btnLimpiar); resetearInterfaz(); }
+
+    if (q.length >= 4) {
+      const m = datos.filter(d => 
+        quitarTildes(d.programa.toLowerCase()).includes(qNormalizado) || 
+        quitarTildes(d.siglas.toLowerCase()).includes(qNormalizado)
+      );
+      renderizarResultados(m);
+    } else hide(dropdownResultados);
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!inputBuscador.contains(e.target) && !dropdownResultados.contains(e.target)) hide(dropdownResultados);
+  });
+
+  inputBuscador.addEventListener('focus', () => {
+    const q = inputBuscador.value.toLowerCase().trim();
+    const qNormalizado = quitarTildes(q);
+
+    if (q.length >= 4) {
+      const m = datos.filter(d => 
+        quitarTildes(d.programa.toLowerCase()).includes(qNormalizado) || 
+        quitarTildes(d.siglas.toLowerCase()).includes(qNormalizado)
+      );
+      renderizarResultados(m);
+    }
+  });
+
+  btnLimpiar.addEventListener('click', resetearInterfaz);
+});
+</script>
+</body>
+</html>
