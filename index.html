@@ -88,14 +88,15 @@
           </div>
           <h3 id="res-programa" class="text-2xl font-bold text-slate-900 leading-tight">Programa</h3>
           <p class="text-slate-500 mt-2 flex items-center text-sm">
-            <svg class="w-4 h-4 mr-1.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <svg class="w-4 h-4 mr-1.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
               <path d="M10.25 2.5a.75.75 0 0 0-.75.75V4.5H5.75A2.25 2.25 0 0 0 3.5 6.75v12.75h-.75a.75.75 0 0 0 0 1.5h18.5a.75.75 0 0 0 0-1.5h-.75V8.75a2.25 2.25 0 0 0-2.25-2.25H14.5v-3.25a.75.75 0 0 0-.75-.75h-3.5ZM14.5 8h3.75c.41 0 .75.34.75.75v10.75h-14V6.75c0-.41.34-.75.75-.75h8.75V8Zm-1.5-4v2.5h-2v-2.5h2Zm-5 5.25c0-.41.34-.75.75-.75h1a.75.75 0 0 1 .75.75v1a.75.75 0 0 1-.75.75h-1a.75.75 0 0 1-.75-.75v-1Zm0 4.25c0-.41.34-.75.75-.75h1a.75.75 0 0 1 .75.75v1a.75.75 0 0 1-.75.75h-1a.75.75 0 0 1-.75-.75v-1Zm4.25-4.25c0-.41.34-.75.75-.75h1a.75.75 0 0 1 .75.75v1a.75.75 0 0 1-.75.75h-1a.75.75 0 0 1-.75-.75v-1Zm0 4.25c0-.41.34-.75.75-.75h1a.75.75 0 0 1 .75.75v1a.75.75 0 0 1-.75.75h-1a.75.75 0 0 1-.75-.75v-1Z"/>
             </svg>
             <span id="res-facultad">Facultad</span>
           </p>
         </div>
 
-        <div class="space-y-6 flex-grow">
+        <div class="space-y-2 flex-grow">
+          
           <!-- Fecha CF -->
           <div id="res-fecha-cf-container" class="hidden bg-brand-accent/5 rounded-xl p-5 border border-brand-accent/20 items-start">
             <div class="bg-white p-3 rounded-lg shadow-sm border border-brand-accent/20 mr-4">
@@ -120,6 +121,14 @@
               <p class="text-sm font-medium text-slate-500 mb-1">Fecha de Inicio del Curso</p>
               <p id="res-fecha" class="text-lg font-semibold text-slate-900">Fecha</p>
             </div>
+          </div>
+
+          <!-- Advertencia Fechas -->
+          <div class="flex items-start text-sm text-slate-500 px-1 pt-1">
+            <svg class="w-5 h-5 mr-2.5 text-brand-light flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20Zm0 1.5a8.5 8.5 0 1 0 0 17 8.5 8.5 0 0 0 0-17Zm0 8.5a.75.75 0 0 1 .75.75v4a.75.75 0 0 1-1.5 0v-4A.75.75 0 0 1 12 12Zm0-3.5a1 1 0 1 1 0 2 1 1 0 0 1 0-2Z"/>
+            </svg>
+            <p class="m-0 leading-tight">Recuerda comprobar estas fechas en el calendario de tu aula general.</p>
           </div>
 
           <!-- Enlaces -->
